@@ -12,5 +12,5 @@ CUR_TC=/home/ruby/Toolchains/arm-eabi-linaro-4.6.2/bin/
 
 ### compile kernel
 CROSS_COMPILE=${CUR_TC}arm-eabi-
-export ARCH=arm
-make VARIANT_DEFCONFIG=msm8930_melius_eur_lte_defconfig cml1_defconfig
+export ARCH=arm make
+VARIANT_DEFCONFIG=msm8930_melius_eur_lte_defconfig cml1_defconfig

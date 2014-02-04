@@ -192,8 +192,8 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
 export KBUILD_BUILDHOST := $(SUBARCH)
-ARCH		?= arm
-CROSS_COMPILE	?= /home/ruby/Toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-
+ARCH		= arm
+CROSS_COMPILE	= /home/ruby/Toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -378,25 +378,6 @@ KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE -fgcse-lm -fgcse-sm -fsched-spec-load -fforce-addr -ffast-math -fsingle-precision-constant -mtune=cortex-a8 -march=armv7-a -mfpu=neon -ftree-vectorize -funswitch-loops
-
- KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
-
- 
-
- # Read KERNELRELEASE from include/config/kernel.release (if it exists)
-
-0 notes on commit 236f8b0 Show line notes below
-shazzl
-
-    Write
-    Preview
-
-Comments are parsed with GitHub Flavored Markdown
-
-Attach images by dragging & dropping or selecting them.
-
-You only receive notifications for this thread when you participate or are @mentioned.
-
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
