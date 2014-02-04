@@ -11,4 +11,6 @@ CUR_TC=/home/ruby/Toolchains/arm-eabi-linaro-4.6.2/bin/
 ##CUR_TC=/home/ruby/Toolchains/linaro_4.8.3/bin/
 
 ### compile kernel
-ARCH=arm CROSS_COMPILE=${CUR_TC}arm-eabi- make cml1_defconfig
+CROSS_COMPILE=${CUR_TC}arm-eabi-
+export ARCH=arm
+make VARIANT_DEFCONFIG=msm8930_melius_eur_lte_defconfig cml1_defconfig

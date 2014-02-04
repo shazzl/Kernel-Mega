@@ -11,4 +11,6 @@ CUR_TC=/home/ruby/Toolchains/arm-eabi-linaro-4.6.2/bin/
 ##CUR_TC=/home/ruby/Toolchains/linaro_4.8.3/bin/
 
 ### cleaning
-ARCH=arm CROSS_COMPILE=${CUR_TC}arm-eabi- make clean && make mrproper
+CROSS_COMPILE=${CUR_TC}arm-eabi-
+export ARCH=arm
+make clean && make mrproper
