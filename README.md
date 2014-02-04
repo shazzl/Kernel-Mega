@@ -1,4 +1,4 @@
-Kernel-Mega
+TW_i9205_JB
 ===========
 
-Kernel for GT-I920x
+Stock JB Kernel for i920x variants
