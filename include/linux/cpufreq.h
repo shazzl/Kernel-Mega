@@ -23,6 +23,15 @@
 
 #define CPUFREQ_NAME_LEN 16
 
+extern int GLOBALKT_MIN_FREQ_LIMIT;
+extern int GLOBALKT_MAX_FREQ_LIMIT;
+
+#define FREQ_TABLE_SIZE		44
+#define FREQ_TABLE_SIZE_OFFSET	4
+#define FREQ_STEPS		22
+#define MAX_VDD_SC    1350000 /* uV */
+#define MIN_VDD_SC     700000 /* uV */
+extern unsigned int kthermal_limit;
 
 /*********************************************************************
  *                     CPUFREQ NOTIFIER INTERFACE                    *

@@ -19,6 +19,7 @@
 #include <linux/regulator/pm8xxx-regulator.h>
 
 #include "board-8930.h"
+#include <linux/cpufreq.h>
 
 #ifdef CONFIG_REGULATOR_MAX77693
 #include <linux/mfd/max77693.h>
@@ -604,9 +605,9 @@ msm8930_pm8917_gpio_regulator_pdata[] __devinitdata = {
 /* SAW regulator constraints */
 struct regulator_init_data msm8930_pm8917_saw_regulator_core0_pdata =
 	/*	      ID  vreg_name	       min_uV   max_uV */
-	SAW_VREG_INIT(S5, "8917_s5",	       850000, 1300000);
+	SAW_VREG_INIT(S5, "8917_s5",	       MIN_VDD_SC, MAX_VDD_SC);
 struct regulator_init_data msm8930_pm8917_saw_regulator_core1_pdata =
-	SAW_VREG_INIT(S6, "8917_s6",	       850000, 1300000);
+	SAW_VREG_INIT(S6, "8917_s6",	       MIN_VDD_SC, MAX_VDD_SC);
 
 /* PM8917 regulator constraints */
 struct pm8xxx_regulator_platform_data
@@ -678,7 +679,7 @@ msm8930_rpm_regulator_init_data[] __devinitdata = {
 	/*	ID a_on pd ss min_uV   max_uV  supply sys_uA  freq  fm  ss_fm */
 	RPM_SMPS(S1, 1, 1, 0, 1300000, 1300000, NULL, 100000, 3p20, NONE, NONE),
 	RPM_SMPS(S2, 0, 1, 0, 1300000, 1300000, NULL,      0, 1p60, NONE, NONE),
-	RPM_SMPS(S3, 0, 1, 1,  500000, 1150000, NULL, 100000, 4p80, NONE, NONE),
+	RPM_SMPS(S3, 0, 1, 1,  500000, 1250000, NULL, 100000, 4p80, NONE, NONE),
 	RPM_SMPS(S4, 1, 1, 0, 1800000, 1800000, NULL, 100000, 1p60, NONE, NONE),
 	RPM_SMPS(S7, 0, 1, 0, 1150000, 1150000, NULL, 100000, 3p20, AUTO, AUTO),
 	RPM_SMPS(S8, 1, 1, 1, 2050000, 2050000, NULL, 100000, 1p60, NONE, NONE),
@@ -716,7 +717,7 @@ msm8930_rpm_regulator_init_data[] __devinitdata = {
 	RPM_LDO(L22,	 0, 1, 0, 2750000, 2750000, NULL,      0, 0),
 #endif
 	RPM_LDO(L23,	 1, 1, 1, 1800000, 1800000, "8917_s8", 10000, 10000),
-	RPM_LDO(L24,	 0, 1, 1,  500000, 1150000, "8917_s1", 10000, 10000),
+	RPM_LDO(L24,	 0, 1, 1,  500000, 1250000, "8917_s1", 10000, 10000),
 	RPM_LDO(L25,	 1, 1, 0, 1250000, 1250000, "8917_s1", 10000, 10000),
 
 	/*	ID     a_on pd ss		    supply */

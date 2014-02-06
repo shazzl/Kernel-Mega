@@ -17,6 +17,7 @@
 #include <mach/rpm-regulator.h>
 #include <mach/msm_bus_board.h>
 #include <mach/msm_bus.h>
+#include <linux/cpufreq.h>
 
 #include "acpuclock.h"
 #include "acpuclock-krait.h"
@@ -52,7 +53,7 @@ static struct scalable scalable[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x4501,
-		.vreg[VREG_CORE] = { "krait0", 1300000 },
+		.vreg[VREG_CORE] = { "krait0", MAX_VDD_SC },
 		.vreg[VREG_MEM]  = { "krait0_mem", 1150000 },
 		.vreg[VREG_DIG]  = { "krait0_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait0_hfpll", 1800000 },
@@ -63,7 +64,7 @@ static struct scalable scalable[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x5501,
-		.vreg[VREG_CORE] = { "krait1", 1300000 },
+		.vreg[VREG_CORE] = { "krait1", MAX_VDD_SC },
 		.vreg[VREG_MEM]  = { "krait1_mem", 1150000 },
 		.vreg[VREG_DIG]  = { "krait1_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait1_hfpll", 1800000 },
@@ -97,7 +98,7 @@ static struct msm_bus_scale_pdata bus_scale_data __initdata = {
 };
 
 static struct l2_level l2_freq_tbl[] __initdata = {
-	[0]  = { {  384000, PLL_8, 0, 0x00 },  LVL_LOW, 1050000, 1 },
+	[0]  = { {  378000, PLL_8, 0, 0x00 },  LVL_LOW, 1050000, 1 },
 	[1]  = { {  432000, HFPLL, 2, 0x20 },  LVL_NOM, 1050000, 2 },
 	[2]  = { {  486000, HFPLL, 2, 0x24 },  LVL_NOM, 1050000, 2 },
 	[3]  = { {  540000, HFPLL, 2, 0x28 },  LVL_NOM, 1050000, 2 },
@@ -203,7 +204,7 @@ static struct acpuclk_krait_params acpuclk_8930aa_params __initdata = {
 	.l2_freq_tbl_size = sizeof(l2_freq_tbl),
 	.bus_scale = &bus_scale_data,
 	.pte_efuse_phys = 0x007000C0,
-	.stby_khz = 384000,
+	.stby_khz = 378000,
 };
 
 static int __init acpuclk_8930aa_probe(struct platform_device *pdev)
