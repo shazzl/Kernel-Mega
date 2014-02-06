@@ -59,9 +59,6 @@ extern ssize_t acpuclk_get_vdd_levels_str_stock(char *buf, int isApp);
 extern void acpuclk_UV_mV_table(int cnt, int vdd_uv[]);
 extern unsigned int get_enable_oc(void);
 
-extern ssize_t get_gpu_vdd_levels_str(char *buf);
-extern void set_gpu_vdd_levels(int uv_tbl[]);
-
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
  * level driver of CPUFreq support, and its spinlock. This lock
@@ -600,22 +597,6 @@ ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
 	acpuclk_UV_mV_table(FREQ_STEPS-modu, u);
 	return count;
 }
-
-ssize_t show_GPU_mV_table(struct cpufreq_policy *policy, char *buf)
-{
-	int modu = 0;
-	return get_gpu_vdd_levels_str(buf);
-}
-
-ssize_t store_GPU_mV_table(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int u[3];
-	ret = sscanf(buf, "%d %d %d", &u[0], &u[1], &u[2]);
-	set_gpu_vdd_levels(u);
-	return count;
-}
-
 /**
  * show_cpuinfo_cur_freq - current CPU frequency as detected by hardware
  */
@@ -845,7 +826,6 @@ cpufreq_freq_attr_rw(scaling_booted);
 cpufreq_freq_attr_rw(freq_lock);
 cpufreq_freq_attr_rw(UV_mV_table);
 cpufreq_freq_attr_ro(UV_mV_table_stock);
-cpufreq_freq_attr_rw(GPU_mV_table);
 cpufreq_freq_attr_rw(enable_auto_hotplug);
 
 static struct attribute *default_attrs[] = {
@@ -865,7 +845,6 @@ static struct attribute *default_attrs[] = {
 &freq_lock.attr,
 &UV_mV_table.attr,
 &UV_mV_table_stock.attr,
-&GPU_mV_table.attr,
 &enable_auto_hotplug.attr,
 NULL
 };

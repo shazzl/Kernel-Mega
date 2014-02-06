@@ -333,6 +333,7 @@ static void max77693_set_input_current(struct max77693_charger_data *charger,
 				else
 					charger->aicl_on = false;
 				goto exit;
+			}
 			msleep(50);
 		} else
 			now_current_reg += (curr_step);
