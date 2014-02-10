@@ -6020,7 +6020,7 @@ static const struct cpumask *cpu_cpu_mask(int cpu)
 }
 
 /* set sched_mc_power_savings to POWERSAVINGS_BALANCE_WAKEUP */
-int sched_smt_power_savings = 0, sched_mc_power_savings = 2;
+int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
 
 struct sd_data {
 	struct sched_domain **__percpu sd;
