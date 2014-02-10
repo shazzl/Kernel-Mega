@@ -92,3 +92,4 @@ kobject_put(force_fast_charge_kobj);
 
 module_init(force_fast_charge_init);
 module_exit(force_fast_charge_exit);
+
