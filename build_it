@@ -22,8 +22,13 @@ mkdir -p ../final_files
 
 ### copy zImage
 cp arch/arm/boot/zImage ../final_files/.
+cp arch/*/*/*.ko ../final_files/.
 cp drivers/*/*.ko ../final_files/.
+cp drivers/*/*/*.ko ../final_files/.
+cp drivers/*/*/*/*.ko ../final_files/.
 cp net/*/*.ko ../final_files/.
+cp block/*.ko ../final_files/.
+cp crypto/*.ko ../final_files/.
 
 echo "DONE"
 
