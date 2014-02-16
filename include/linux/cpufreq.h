@@ -31,7 +31,6 @@ extern int GLOBALKT_MAX_FREQ_LIMIT;
 #define FREQ_STEPS		22
 #define MAX_VDD_SC    1400000 /* uV */
 #define MIN_VDD_SC     700000 /* uV */
-extern unsigned int kthermal_limit;
 
 /*********************************************************************
  *                     CPUFREQ NOTIFIER INTERFACE                    *
