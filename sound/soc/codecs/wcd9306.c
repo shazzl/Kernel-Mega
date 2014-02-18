@@ -2099,9 +2099,6 @@ static int tapan_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 	case SND_SOC_DAPM_POST_PMU:
 
-		/* Disable TX digital mute */
-		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x00);
-
 		if (tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
 				CF_MIN_3DB_150HZ) {
 
@@ -2120,7 +2117,7 @@ static int tapan_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 	case SND_SOC_DAPM_PRE_PMD:
 
-		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x01);
+		/* Cancel possibly scheduled work */
 		cancel_delayed_work_sync(&tx_hpf_work[decimator - 1].dwork);
 		break;
 
@@ -2819,7 +2816,10 @@ static int tapan_volatile(struct snd_soc_codec *ssc, unsigned int reg)
 }
 
 #define TAPAN_FORMATS (SNDRV_PCM_FMTBIT_S16_LE)
-static int tapan_write(struct snd_soc_codec *codec, unsigned int reg,
+#ifndef CONFIG_SOUND_CONTROL_HAX_GPL
+static
+#endif
+int tapan_write(struct snd_soc_codec *codec, unsigned int reg,
 	unsigned int value)
 {
 	int ret;
@@ -2838,7 +2838,14 @@ static int tapan_write(struct snd_soc_codec *codec, unsigned int reg,
 
 	return wcd9xxx_reg_write(codec->control_data, reg, value);
 }
-static unsigned int tapan_read(struct snd_soc_codec *codec,
+#ifdef CONFIG_SOUND_CONTROL_HAX_GPL
+EXPORT_SYMBOL(tapan_write);
+#endif
+
+#ifndef CONFIG_SOUND_CONTROL_HAX_GPL
+static
+#endif
+unsigned int tapan_read(struct snd_soc_codec *codec,
 				unsigned int reg)
 {
 	unsigned int val;
@@ -2862,6 +2869,10 @@ static unsigned int tapan_read(struct snd_soc_codec *codec,
 	val = wcd9xxx_reg_read(codec->control_data, reg);
 	return val;
 }
+
+#ifdef CONFIG_SOUND_CONTROL_HAX_GPL
+EXPORT_SYMBOL(tapan_read);
+#endif
 
 static int tapan_startup(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
@@ -3322,6 +3333,37 @@ static int tapan_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
+int tapan_digital_mute(struct snd_soc_dai *dai, int mute)
+{
+	struct snd_soc_codec *codec = NULL;
+	u16 tx_vol_ctl_reg = 0;
+	int i = 0;
+
+	if (!dai || !dai->codec) {
+		pr_err("%s: Invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	codec = dai->codec;
+	if (dai->id != AIF1_CAP) {
+		dev_dbg(codec->dev, "%s: Not capture use case, skip mute/unmute\n",
+				__func__);
+		return 0;
+	}
+
+	mute = (mute) ? 1 : 0;
+	usleep_range(10000, 10000);
+	for (i = 0; i < NUM_DECIMATORS ; i++) {
+		tx_vol_ctl_reg = TAPAN_A_CDC_TX1_VOL_CTL_CFG + (8 * i);
+		/* Set TX digital mute /unmute */
+		pr_debug("%s: Setting %s for decimators\n",
+				 __func__, (mute ? "mute" : "unmute"));
+		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, mute);
+	}
+
+	return 0;
+}
+
 static struct snd_soc_dai_ops tapan_dai_ops = {
 	.startup = tapan_startup,
 	.shutdown = tapan_shutdown,
@@ -3330,6 +3372,7 @@ static struct snd_soc_dai_ops tapan_dai_ops = {
 	.set_fmt = tapan_set_dai_fmt,
 	.set_channel_map = tapan_set_channel_map,
 	.get_channel_map = tapan_get_channel_map,
+	.digital_mute = tapan_digital_mute,
 };
 
 static struct snd_soc_dai_driver tapan_dai[] = {
@@ -4374,6 +4417,13 @@ static void tapan_codec_init_reg(struct snd_soc_codec *codec)
 static struct wcd9xxx_reg_address tapan_reg_address = {
 };
 
+#ifdef CONFIG_SOUND_CONTROL_HAX_GPL
+struct snd_kcontrol_new *gpl_faux_snd_controls_ptr =
+    (struct snd_kcontrol_new *)tapan_snd_controls;
+struct snd_soc_codec *fauxsound_codec_ptr;
+EXPORT_SYMBOL(fauxsound_codec_ptr);
+#endif
+
 static int tapan_codec_probe(struct snd_soc_codec *codec)
 {
 	struct wcd9xxx *control;
@@ -4384,6 +4434,11 @@ static int tapan_codec_probe(struct snd_soc_codec *codec)
 	int ret = 0;
 	int i;
 	void *ptr = NULL;
+
+#ifdef CONFIG_SOUND_CONTROL_HAX_GPL
+    pr_info("tapan codec probe...\n");
+    fauxsound_codec_ptr = codec;
+#endif
 
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
@@ -4598,3 +4653,4 @@ module_exit(tapan_codec_exit);
 
 MODULE_DESCRIPTION("Tapan codec driver");
 MODULE_LICENSE("GPL v2");
+
