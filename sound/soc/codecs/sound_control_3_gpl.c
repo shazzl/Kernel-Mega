@@ -19,7 +19,7 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <linux/kallsyms.h>
-#include <linux/mfd/wcd9xxx/wcd9306_registers.h>
+#include <linux/mfd/wcd9xxx/wcd9304_registers.h>
 
 #define SOUND_CONTROL_MAJOR_VERSION        3
 #define SOUND_CONTROL_MINOR_VERSION        1
@@ -28,8 +28,8 @@ extern struct snd_soc_codec *fauxsound_codec_ptr;
 
 static int snd_ctrl_locked = 0;
 
-unsigned int tapan_read(struct snd_soc_codec *codec, unsigned int reg);
-int tapan_write(struct snd_soc_codec *codec, unsigned int reg,
+unsigned int sitar_read(struct snd_soc_codec *codec, unsigned int reg);
+int sitar_write(struct snd_soc_codec *codec, unsigned int reg,
                 unsigned int value);
 
 int reg_access(unsigned int reg)
@@ -37,18 +37,17 @@ int reg_access(unsigned int reg)
         int ret = 1;
 
         switch (reg) {
-                case TAPAN_A_RX_HPH_L_GAIN:
-                case TAPAN_A_RX_HPH_R_GAIN:
-                case TAPAN_A_RX_HPH_L_STATUS:
-                case TAPAN_A_RX_HPH_R_STATUS:
-                case TAPAN_A_CDC_RX1_VOL_CTL_B2_CTL:
-                case TAPAN_A_CDC_RX2_VOL_CTL_B2_CTL:
-                case TAPAN_A_CDC_RX3_VOL_CTL_B2_CTL:
-                case TAPAN_A_CDC_RX4_VOL_CTL_B2_CTL:
-                case TAPAN_A_CDC_TX1_VOL_CTL_GAIN:
-                case TAPAN_A_CDC_TX2_VOL_CTL_GAIN:
-                case TAPAN_A_CDC_TX3_VOL_CTL_GAIN:
-                case TAPAN_A_CDC_TX4_VOL_CTL_GAIN:
+                case SITAR_A_RX_HPH_L_GAIN:
+                case SITAR_A_RX_HPH_R_GAIN:
+                case SITAR_A_RX_HPH_L_STATUS:
+                case SITAR_A_RX_HPH_R_STATUS:
+                case SITAR_A_CDC_RX1_VOL_CTL_B2_CTL:
+                case SITAR_A_CDC_RX2_VOL_CTL_B2_CTL:
+                case SITAR_A_CDC_RX3_VOL_CTL_B2_CTL:
+                case SITAR_A_CDC_TX1_VOL_CTL_GAIN:
+                case SITAR_A_CDC_TX2_VOL_CTL_GAIN:
+                case SITAR_A_CDC_TX3_VOL_CTL_GAIN:
+                case SITAR_A_CDC_TX4_VOL_CTL_GAIN:
                         if (snd_ctrl_locked)
                                 ret = 0;
                         break;
@@ -76,8 +75,8 @@ static ssize_t cam_mic_gain_show(struct kobject *kobj,
                 struct kobj_attribute *attr, char *buf)
 {
         return sprintf(buf, "%u\n",
-                tapan_read(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_TX3_VOL_CTL_GAIN));
+                sitar_read(fauxsound_codec_ptr,
+                        SITAR_A_CDC_TX3_VOL_CTL_GAIN));
 
 }
 
@@ -89,8 +88,8 @@ static ssize_t cam_mic_gain_store(struct kobject *kobj,
         sscanf(buf, "%u %u", &lval, &chksum);
 
         if (calc_checksum(lval, 0, chksum)) {
-                tapan_write(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_TX3_VOL_CTL_GAIN, lval);
+                sitar_write(fauxsound_codec_ptr,
+                        SITAR_A_CDC_TX3_VOL_CTL_GAIN, lval);
         }
         return count;
 }
@@ -99,8 +98,8 @@ static ssize_t mic_gain_show(struct kobject *kobj,
                 struct kobj_attribute *attr, char *buf)
 {
         return sprintf(buf, "%u\n",
-                tapan_read(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_TX4_VOL_CTL_GAIN));
+                sitar_read(fauxsound_codec_ptr,
+                        SITAR_A_CDC_TX4_VOL_CTL_GAIN));
 }
 
 static ssize_t mic_gain_store(struct kobject *kobj,
@@ -111,8 +110,8 @@ static ssize_t mic_gain_store(struct kobject *kobj,
         sscanf(buf, "%u %u", &lval, &chksum);
 
         if (calc_checksum(lval, 0, chksum)) {
-                tapan_write(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_TX4_VOL_CTL_GAIN, lval);
+                sitar_write(fauxsound_codec_ptr,
+                        SITAR_A_CDC_TX4_VOL_CTL_GAIN, lval);
         }
         return count;
 
@@ -122,10 +121,10 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
                 struct kobj_attribute *attr, char *buf)
 {
         return sprintf(buf, "%u %u\n",
-                        tapan_read(fauxsound_codec_ptr,
-                                TAPAN_A_CDC_RX3_VOL_CTL_B2_CTL),
-                        tapan_read(fauxsound_codec_ptr,
-                                TAPAN_A_CDC_RX4_VOL_CTL_B2_CTL));
+                        sitar_read(fauxsound_codec_ptr,
+                                SITAR_A_CDC_RX3_VOL_CTL_B2_CTL),
+                        sitar_read(fauxsound_codec_ptr,
+                                SITAR_A_CDC_RX3_VOL_CTL_B2_CTL));
 
 }
 
@@ -137,10 +136,10 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
         sscanf(buf, "%u %u %u", &lval, &rval, &chksum);
 
         if (calc_checksum(lval, rval, chksum)) {
-                tapan_write(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_RX3_VOL_CTL_B2_CTL, lval);
-                tapan_write(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_RX4_VOL_CTL_B2_CTL, rval);
+                sitar_write(fauxsound_codec_ptr,
+                        SITAR_A_CDC_RX3_VOL_CTL_B2_CTL, lval);
+                sitar_write(fauxsound_codec_ptr,
+                        SITAR_A_CDC_RX3_VOL_CTL_B2_CTL, rval);
         }
         return count;
 }
@@ -149,10 +148,10 @@ static ssize_t headphone_gain_show(struct kobject *kobj,
                 struct kobj_attribute *attr, char *buf)
 {
         return sprintf(buf, "%u %u\n",
-                        tapan_read(fauxsound_codec_ptr,
-                                TAPAN_A_CDC_RX1_VOL_CTL_B2_CTL),
-                        tapan_read(fauxsound_codec_ptr,
-                                TAPAN_A_CDC_RX2_VOL_CTL_B2_CTL));
+                        sitar_read(fauxsound_codec_ptr,
+                                SITAR_A_CDC_RX1_VOL_CTL_B2_CTL),
+                        sitar_read(fauxsound_codec_ptr,
+                                SITAR_A_CDC_RX2_VOL_CTL_B2_CTL));
 }
 
 static ssize_t headphone_gain_store(struct kobject *kobj,
@@ -163,10 +162,10 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
         sscanf(buf, "%u %u %u", &lval, &rval, &chksum);
 
         if (calc_checksum(lval, rval, chksum)) {
-                tapan_write(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_RX1_VOL_CTL_B2_CTL, lval);
-                tapan_write(fauxsound_codec_ptr,
-                        TAPAN_A_CDC_RX2_VOL_CTL_B2_CTL, rval);
+                sitar_write(fauxsound_codec_ptr,
+                        SITAR_A_CDC_RX1_VOL_CTL_B2_CTL, lval);
+                sitar_write(fauxsound_codec_ptr,
+                        SITAR_A_CDC_RX2_VOL_CTL_B2_CTL, rval);
         }
         return count;
 }
@@ -175,8 +174,8 @@ static ssize_t headphone_pa_gain_show(struct kobject *kobj,
                 struct kobj_attribute *attr, char *buf)
 {
         return sprintf(buf, "%u %u\n",
-                tapan_read(fauxsound_codec_ptr, TAPAN_A_RX_HPH_L_GAIN),
-                tapan_read(fauxsound_codec_ptr, TAPAN_A_RX_HPH_R_GAIN));
+                sitar_read(fauxsound_codec_ptr, SITAR_A_RX_HPH_L_GAIN),
+                sitar_read(fauxsound_codec_ptr, SITAR_A_RX_HPH_R_GAIN));
 }
 
 static ssize_t headphone_pa_gain_store(struct kobject *kobj,
@@ -189,21 +188,21 @@ static ssize_t headphone_pa_gain_store(struct kobject *kobj,
         sscanf(buf, "%u %u %u", &lval, &rval, &chksum);
 
         if (calc_checksum(lval, rval, chksum)) {
-        gain = tapan_read(fauxsound_codec_ptr, TAPAN_A_RX_HPH_L_GAIN);
+        gain = sitar_read(fauxsound_codec_ptr, SITAR_A_RX_HPH_L_GAIN);
         out = (gain & 0xf0) | lval;
-        tapan_write(fauxsound_codec_ptr, TAPAN_A_RX_HPH_L_GAIN, out);
+        sitar_write(fauxsound_codec_ptr, SITAR_A_RX_HPH_L_GAIN, out);
 
-        status = tapan_read(fauxsound_codec_ptr, TAPAN_A_RX_HPH_L_STATUS);
+        status = sitar_read(fauxsound_codec_ptr, SITAR_A_RX_HPH_L_STATUS);
         out = (status & 0x0f) | (lval << 4);
-        tapan_write(fauxsound_codec_ptr, TAPAN_A_RX_HPH_L_STATUS, out);
+        sitar_write(fauxsound_codec_ptr, SITAR_A_RX_HPH_L_STATUS, out);
 
-        gain = tapan_read(fauxsound_codec_ptr, TAPAN_A_RX_HPH_R_GAIN);
+        gain = sitar_read(fauxsound_codec_ptr, SITAR_A_RX_HPH_R_GAIN);
         out = (gain & 0xf0) | rval;
-        tapan_write(fauxsound_codec_ptr, TAPAN_A_RX_HPH_R_GAIN, out);
+        sitar_write(fauxsound_codec_ptr, SITAR_A_RX_HPH_R_GAIN, out);
 
-        status = tapan_read(fauxsound_codec_ptr, TAPAN_A_RX_HPH_R_STATUS);
+        status = sitar_read(fauxsound_codec_ptr, SITAR_A_RX_HPH_R_STATUS);
         out = (status & 0x0f) | (rval << 4);
-        tapan_write(fauxsound_codec_ptr, TAPAN_A_RX_HPH_R_STATUS, out);
+        sitar_write(fauxsound_codec_ptr, SITAR_A_RX_HPH_R_STATUS, out);
         }
         return count;
 }
@@ -329,4 +328,3 @@ module_exit(sound_control_exit);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Paul Reioux <reioux@gmail.com>");
 MODULE_DESCRIPTION("Sound Control Module 3.x");
-

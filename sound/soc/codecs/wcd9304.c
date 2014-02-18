@@ -3144,27 +3144,11 @@ static int sitar_volatile(struct snd_soc_codec *ssc, unsigned int reg)
 }
 
 #define SITAR_FORMATS (SNDRV_PCM_FMTBIT_S16_LE)
-static int sitar_write(struct snd_soc_codec *codec, unsigned int reg,
-	unsigned int value)
-{
-	int ret;
-
-	if (reg == SND_SOC_NOPM)
-		return 0;
-
-	BUG_ON(reg > SITAR_MAX_REGISTER);
-
-	if (!sitar_volatile(codec, reg)) {
-		ret = snd_soc_cache_write(codec, reg, value);
-		if (ret != 0)
-			dev_err(codec->dev, "Cache write to %x failed: %d\n",
-				reg, ret);
-	}
-
-	return wcd9xxx_reg_write(codec->control_data, reg, value);
-}
-static unsigned int sitar_read(struct snd_soc_codec *codec,
-				unsigned int reg)
+#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
+static
+#endif
+unsigned int sitar_read(struct snd_soc_codec *codec,
+	unsigned int reg)
 {
 	unsigned int val;
 	int ret;
@@ -3187,6 +3171,49 @@ static unsigned int sitar_read(struct snd_soc_codec *codec,
 	val = wcd9xxx_reg_read(codec->control_data, reg);
 	return val;
 }
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+EXPORT_SYMBOL(sitar_read);
+#endif
+
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+extern int reg_access(unsigned int);
+#endif
+
+#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
+static
+#endif
+int sitar_write(struct snd_soc_codec *codec, unsigned int reg,
+				unsigned int value)
+{
+	int ret;
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+	int val;
+#endif
+	if (reg == SND_SOC_NOPM)
+		return 0;
+
+	BUG_ON(reg > SITAR_MAX_REGISTER);
+
+	if (!sitar_volatile(codec, reg)) {
+		ret = snd_soc_cache_write(codec, reg, value);
+		if (ret != 0)
+			dev_err(codec->dev, "Cache write to %x failed: %d\n",
+				reg, ret);
+	}
+
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+	if (!reg_access(reg))
+		val = wcd9xxx_reg_read_safe(codec->control_data, reg);
+	else
+		val = value;
+	return wcd9xxx_reg_write(codec->control_data, reg, val);
+#else
+	return wcd9xxx_reg_write(codec->control_data, reg, value);
+#endif
+}
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+EXPORT_SYMBOL(sitar_write);
+#endif
 
 static void sitar_codec_enable_audio_mode_bandgap(struct snd_soc_codec *codec)
 {
@@ -5913,6 +5940,13 @@ static void sitar_codec_init_reg(struct snd_soc_codec *codec)
 			sitar_codec_reg_init_val[i].val);
 }
 
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+struct snd_kcontrol_new *gpl_faux_snd_controls_ptr =
+	(struct snd_kcontrol_new *)sitar_snd_controls;
+struct snd_soc_codec *fauxsound_codec_ptr;
+EXPORT_SYMBOL(fauxsound_codec_ptr);
+#endif
+
 static int sitar_codec_probe(struct snd_soc_codec *codec)
 {
 	struct wcd9xxx *core;
@@ -5923,11 +5957,17 @@ static int sitar_codec_probe(struct snd_soc_codec *codec)
 	u8 sitar_version;
 	void *ptr = NULL;
 
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+	pr_info("sitar codec probe...\n");
+	fauxsound_codec_ptr = codec;
+#endif
+
 	pr_err("%s\n", __func__);
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	core = codec->control_data;
 
 	sitar = kzalloc(sizeof(struct sitar_priv), GFP_KERNEL);
+
 	if (!sitar) {
 		dev_err(codec->dev, "Failed to allocate private data\n");
 		return -ENOMEM;
