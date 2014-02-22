@@ -29,7 +29,8 @@
 #include <linux/genhd.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
-#include <linux/lzo.h>
+//#include <linux/lzo.h>
+#include <linux/lz4.h>
 #include <linux/string.h>
 #include <linux/vmalloc.h>
 
@@ -40,7 +41,7 @@ static int zram_major;
 struct zram *zram_devices;
 
 /* Module params (documentation at end) */
-static unsigned int num_devices;
+static unsigned int num_devices = 4;
 
 static void zram_stat_inc(u32 *v)
 {
@@ -249,7 +250,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 
 	cmem = zs_map_object(zram->mem_pool, (unsigned long)zram->table[index].handle, ZS_MM_RW);
 
-	ret = lzo1x_decompress_safe(cmem + sizeof(*zheader),
+	ret = lz41x_decompress_safe(cmem + sizeof(*zheader),
 				    zram->table[index].size,
 				    uncmem, &clen);
 
@@ -263,7 +264,7 @@ static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 	kunmap_atomic(user_mem);
 
 	/* Should NEVER happen. Return bio error if it does. */
-	if (unlikely(ret != LZO_E_OK)) {
+	if (unlikely(ret != LZ4_E_OK)) {
 		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
 		zram_stat64_inc(zram, &zram->stats.failed_reads);
 		return ret;
@@ -296,13 +297,13 @@ static int zram_read_before_write(struct zram *zram, char *mem, u32 index)
 		return 0;
 	}
 
-	ret = lzo1x_decompress_safe(cmem + sizeof(*zheader),
+	ret = lz41x_decompress_safe(cmem + sizeof(*zheader),
 				    zram->table[index].size,
 				    mem, &clen);
 	zs_unmap_object(zram->mem_pool, (unsigned long)zram->table[index].handle);
 
 	/* Should NEVER happen. Return bio error if it does. */
-	if (unlikely(ret != LZO_E_OK)) {
+	if (unlikely(ret != LZ4_E_OK)) {
 		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
 		zram_stat64_inc(zram, &zram->stats.failed_reads);
 		return ret;
@@ -369,14 +370,14 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 		goto out;
 	}
 
-	ret = lzo1x_1_compress(uncmem, PAGE_SIZE, src, &clen,
+	ret = lz41x_1_compress(uncmem, PAGE_SIZE, src, &clen,
 			       zram->compress_workmem);
 
 	kunmap_atomic(user_mem);
 	if (is_partial_io(bvec))
 			kfree(uncmem);
 
-	if (unlikely(ret != LZO_E_OK)) {
+	if (unlikely(ret != LZ4_E_OK)) {
 		pr_err("Compression failed! err=%d\n", ret);
 		goto out;
 	}
@@ -635,7 +636,7 @@ int zram_init_device(struct zram *zram)
 
 	zram_set_disksize(zram, totalram_pages << PAGE_SHIFT);
 
-	zram->compress_workmem = kzalloc(LZO1X_MEM_COMPRESS, GFP_KERNEL);
+	zram->compress_workmem = kzalloc(LZ41X_MEM_COMPRESS, GFP_KERNEL);
 	if (!zram->compress_workmem) {
 		pr_err("Error allocating compressor working memory!\n");
 		ret = -ENOMEM;
@@ -800,15 +801,8 @@ static int __init zram_init(void)
 		pr_warning("Unable to get major number\n");
 		ret = -EBUSY;
 		goto out;
-	}
-
-	if (!num_devices) {
-		pr_info("num_devices not specified. Using default: 1\n");
-		num_devices = 1;
-	}
 
 	/* Allocate the device array and initialize each one */
-	pr_info("Creating %u devices ...\n", num_devices);
 	zram_devices = kzalloc(num_devices * sizeof(struct zram), GFP_KERNEL);
 	if (!zram_devices) {
 		ret = -ENOMEM;
@@ -820,6 +814,7 @@ static int __init zram_init(void)
 		if (ret)
 			goto free_devices;
 	}
+		pr_info("Created %u device(s) ...\n", num_devices); 
 
 	return 0;
 
