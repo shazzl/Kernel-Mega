@@ -29,6 +29,7 @@ cp drivers/*/*/*/*.ko ../final_files/.
 cp net/*/*.ko ../final_files/.
 cp block/*.ko ../final_files/.
 cp crypto/*.ko ../final_files/.
+cp fs/*/*.ko ../final_files/.
 
 echo "DONE"
 
