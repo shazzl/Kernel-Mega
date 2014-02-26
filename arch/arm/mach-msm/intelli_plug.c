@@ -271,7 +271,7 @@ static void intelli_plug_early_suspend(struct early_suspend *handler)
 {
 	int i;
 	int num_of_active_cores = 4;
-	
+
 	cancel_delayed_work_sync(&intelli_plug_work);
 
 	mutex_lock(&intelli_plug_mutex);
